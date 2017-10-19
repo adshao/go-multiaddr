@@ -106,31 +106,31 @@ func TestEqual(t *testing.T) {
 	m3 := newMultiaddr(t, "/ip4/127.0.0.1/tcp/1234")
 	m4 := newMultiaddr(t, "/ip4/127.0.0.1/tcp/1234/")
 
-	if m1.Equal(m2) {
+	if m1 == m2 {
 		t.Error("should not be equal")
 	}
 
-	if m2.Equal(m1) {
+	if m2 == m1 {
 		t.Error("should not be equal")
 	}
 
-	if !m2.Equal(m3) {
+	if m2 != m3 {
 		t.Error("should be equal")
 	}
 
-	if !m3.Equal(m2) {
+	if m3 != m2 {
 		t.Error("should be equal")
 	}
 
-	if !m1.Equal(m1) {
+	if m1 != m1 {
 		t.Error("should be equal")
 	}
 
-	if !m2.Equal(m4) {
+	if m2 != m4 {
 		t.Error("should be equal")
 	}
 
-	if !m4.Equal(m3) {
+	if m4 != m3 {
 		t.Error("should be equal")
 	}
 }
@@ -143,10 +143,11 @@ func TestStringToBytes(t *testing.T) {
 			t.Error("failed to decode hex", h)
 		}
 
-		b2, err := stringToBytes(s)
+		b2s, err := stringToMultiaddr(s)
 		if err != nil {
 			t.Error("failed to convert", s)
 		}
+		b2 := []byte(b2s)
 
 		if !bytes.Equal(b1, b2) {
 			t.Error("failed to convert", s, "to", b1, "got", b2)
@@ -211,15 +212,12 @@ func TestBytesSplitAndJoin(t *testing.T) {
 		}
 
 		joined := Join(split...)
-		if !m.Equal(joined) {
+		if m != joined {
 			t.Errorf("joined components failed: %s != %s", m, joined)
 		}
 
 		// modifying underlying bytes is fine.
-		m2 := m.(*multiaddr)
-		for i := range m2.bytes {
-			m2.bytes[i] = 0
-		}
+		m = Multiaddr(make([]byte, len(m)))
 
 		for i, a := range split {
 			if a.String() != res[i] {
